@@ -85,6 +85,7 @@ while [[ $# -gt 0 ]]; do
                 echo "$2" > "$persist/backend"
                 unset backend
                 backend="$2"
+                rm $HOME/.config/waybar/colors-custom.css
                 reload_all
             else
                 echo "--backend: Illegal Operation"
@@ -153,9 +154,9 @@ while [[ $# -gt 0 ]]; do
                 "all")
                     reload_all
                     ;;
-        *)
-            usage
-            ;;
+                *)
+                    usage
+                    ;;
     esac
     shift 2  # Shift twice to skip the option and its argument
     ;;

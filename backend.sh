@@ -90,10 +90,18 @@ fi
 bar_symlink() {
     if [[ $backend == "pywal" ]]; then
         if [[ $bar == "waybar" ]]; then
-            if [ ! -e "$HOME/.config/waybar/colors-waybar.css" ] && [ -e "$HOME/.cache/wal/colors-waybar.css" ]; then
-                ln -s "$HOME/.cache/wal/colors-waybar.css" "$HOME/.config/waybar/"
+            if [ ! -e "$HOME/.config/waybar/colors-custom.css" ] && [ -e "$HOME/.cache/wal/colors-waybar.css" ]; then
+                ln -s "$HOME/.cache/wal/colors-waybar.css" "$HOME/.config/waybar/colors-custom.css"
             elif [ ! -e "$HOME/.cache/wal/colors-waybar.css" ]; then
                 fetch
+            fi
+        fi
+    fi
+
+    if [[ $backend == "manual" ]]; then
+        if [[ $bar == "waybar" ]]; then
+            if [ ! -e "$HOME/.config/waybar/colors-waybar.css" ]; then
+                ln -s "$HOME/sysconf/colors-custom.css" "$HOME/.config/waybar/"
             fi
         fi
     fi
