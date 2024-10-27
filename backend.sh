@@ -112,7 +112,7 @@ bar_init() {
 
     if [[ $bar == "waybar" ]]; then 
         bar_symlink
-        nohup $bar > /dev/null 2>&1 &
+        nohup $bar > /dev/null 2>&1 & 
     elif [[ $bar == "polybar" ]]; then
         nohup $bar mybar > /dev/null 2>&1 &
     elif [[ $bar == "eww" ]]; then

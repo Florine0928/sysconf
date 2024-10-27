@@ -5,7 +5,7 @@
 # Import variables and functions
 source $HOME/sysconf/backend.sh
 
-populate
+populate # persist
 
 usage() {
     echo "Usage: $0 [OPTIONS]"
@@ -31,19 +31,29 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         --wallpaper)
             echo "$2" > "$persist/wallpaper"
+            unset wall
+            wall="$2"
+            reload_all
             shift 2
             ;;
         --wall-util)
             if [[ "$2" == "feh" ]] && [[ "$wbackend" == "xorg" ]]; then
-                echo "feh" > "$persist/wall_util"
+                echo "$2" > "$persist/wall_util"
+                unset wall_util
+                wall_util="$2"
+                wallutil
             elif [[ "$2" == "feh" ]] && [[ "$wbackend" == "wayland" ]]; then
                 echo "--wall-util: cannot use feh as wallpaper setter on wayland session."
             elif [[ "$2" == "swaybg" ]] && [[ "$wbackend" == "wayland" ]]; then
-                echo "swaybg" > "$persist/wall_util"
+                echo "$2" > "$persist/wall_util"
+                unset wall_util
+                wall_util="$2"
+                wallutil
             elif [[ "$2" == "swaybg" ]] && [[ "$wbackend" == "xorg" ]]; then
                 echo "--wall-util: cannot use swaybg as wallpaper setter on xorg session."
             elif [[ "$2" == "no" ]]; then
-                echo "no" > "$persist/wall_util"
+                pkill $wall_util
+                echo "$2" > "$persist/wall_util"
             else
                 echo "--wall-util: Illegal Operation, did you set backend? --sb <wayland/xorg>"
             fi
@@ -51,9 +61,15 @@ while [[ $# -gt 0 ]]; do
             ;;
         --scheme)
             if [[ "$2" == "dark" ]]; then
-                echo "dark" > "$persist/scheme"
+                echo "$2" > "$persist/scheme"
+                unset scheme
+                scheme="$2"
+                reload_all
             elif [[ "$2" == "light" ]]; then
-                echo "light" > "$persist/scheme"
+                echo "$2" > "$persist/scheme"
+                unset scheme
+                scheme="$2"
+                reload_all
             else
                 echo "--scheme: Illegal Operation"
             fi
@@ -61,9 +77,15 @@ while [[ $# -gt 0 ]]; do
             ;;
         --backend)
             if [[ "$2" == "pywal" ]]; then
-                echo "pywal" > "$persist/backend"
+                echo "$2" > "$persist/backend"
+                unset backend
+                backend="$2"
+                reload_all
             elif [[ "$2" == "manual" ]]; then
-                echo "manual" > "$persist/backend"
+                echo "$2" > "$persist/backend"
+                unset backend
+                backend="$2"
+                reload_all
             else
                 echo "--backend: Illegal Operation"
             fi
@@ -71,9 +93,13 @@ while [[ $# -gt 0 ]]; do
             ;;
         --sb)
             if [[ "$2" == "wayland" ]]; then
-                  echo "wayland" > "$persist/wbackend"
+                echo "$2" > "$persist/wbackend"
+                unset wbackend
+                wbackend="$2"
             elif [[ "$2" == "xorg" ]]; then
-                echo "xorg" > "$persist/wbackend"
+                echo "$2" > "$persist/wbackend"
+                unset wbackend
+                wbackend="$2"
             else 
                 echo "--sb: Illegal Operation"
             fi
@@ -81,16 +107,29 @@ while [[ $# -gt 0 ]]; do
             ;;
         --bar)
             if [[ "$2" == "eww" ]]; then
-                echo "eww" > "$persist/bar"
+                echo "$2s" > "$persist/bar"
+                unset bar
+                bar="$2"
+                bar_init
             elif [[ "$2" == "polybar" ]] && [[ "$wbackend" == "xorg" ]]; then
-                echo "polybar" > "$persist/bar"
+                echo "$2" > "$persist/bar"
+                unset bar
+                bar="$2"
+                bar_init
             elif [[ "$2" == "ags" ]] && [[ "$wbackend" == "wayland" ]]; then
-                echo "ags" > "$persist/bar"
+                echo "$2" > "$persist/bar"
+                unset bar
+                bar="$2"
+                bar_init
             elif [[ "$2" == "waybar" ]] && [[ "$wbackend" == "wayland" ]]; then
-                bar_symlink
-                echo "waybar" > "$persist/bar"
+                echo "$2" > "$persist/bar"
+                unset bar
+                bar="$2"
+                bar_init
             elif [[ "$2" == "no" ]]; then
-                echo "no" > "$persist/bar"
+                pgrep -x "$bar" > /dev/null && pkill -x "$bar"
+                echo "$2" > "$persist/bar"
+
             else
                 echo "--bar: Illegal Operation, did you set backend correctly? --sb <wayland/xorg>"
             fi
@@ -112,9 +151,7 @@ while [[ $# -gt 0 ]]; do
                     bar_init
                     ;;
                 "all")
-                    fetch
-                    wallutil
-                    bar_init
+                    reload_all
                     ;;
         *)
             usage
