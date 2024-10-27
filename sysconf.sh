@@ -3,8 +3,7 @@
 ############################################### Configurator Script!!!!!!!!!!!!!!!!!!!!!!!! ###############################################
 
 # Import variables and functions
-source $HOME/sysconf/var.sh
-source $HOME/sysconf/func.sh
+source $HOME/sysconf/backend.sh
 
 populate
 
@@ -14,10 +13,10 @@ usage() {
     echo "Options:"
     echo "  -h, --help                    Shows this help message"
     echo "  --wallpaper <path to file>    Set wallpaper target"
-    echo "  --wall-util <swaybg/feh>      Specify the wallpaper utility (wayland - swaybg / feh - x.org)"
-    echo "  --bar <option>                Set the bar to execute at start (wayland - eww, ags, waybar / eww, polybar - x.org)"
+    echo "  --wall-util <swaybg/feh>      Specify the wallpaper utility (swaybg, feh. "no" to disable)"
+    echo "  --bar <option>                Set the bar to execute at start (waybar, polybar, ags, eww. "no" to disable)"
     echo "  --scheme <type>               Set the color scheme (light or dark)"
-    echo "  --backend <type>              Choose backend (pywal, matugen (very uncomplete), manual)"
+    echo "  --backend <type>              Choose backend (pywal, manual)"
     echo "  --sb <type>                   Specify the session backend (wayland or xorg)"
     echo "  --reload <option>             Reload Rice (Options: all, $backend, $wall_util, $bar)"
     echo
@@ -37,8 +36,14 @@ while [[ $# -gt 0 ]]; do
         --wall-util)
             if [[ "$2" == "feh" ]] && [[ "$wbackend" == "xorg" ]]; then
                 echo "feh" > "$persist/wall_util"
+            elif [[ "$2" == "feh" ]] && [[ "$wbackend" == "wayland" ]]; then
+                echo "--wall-util: cannot use feh as wallpaper setter on wayland session."
             elif [[ "$2" == "swaybg" ]] && [[ "$wbackend" == "wayland" ]]; then
                 echo "swaybg" > "$persist/wall_util"
+            elif [[ "$2" == "swaybg" ]] && [[ "$wbackend" == "xorg" ]]; then
+                echo "--wall-util: cannot use swaybg as wallpaper setter on xorg session."
+            elif [[ "$2" == "no" ]]; then
+                echo "no" > "$persist/wall_util"
             else
                 echo "--wall-util: Illegal Operation, did you set backend? --sb <wayland/xorg>"
             fi
@@ -57,11 +62,9 @@ while [[ $# -gt 0 ]]; do
         --backend)
             if [[ "$2" == "pywal" ]]; then
                 echo "pywal" > "$persist/backend"
-            elif [[ "$2" == "matugen" ]]; then
-                echo "matugen" > "$persist/backend"
             elif [[ "$2" == "manual" ]]; then
                 echo "manual" > "$persist/backend"
-            else 
+            else
                 echo "--backend: Illegal Operation"
             fi
             shift 2
@@ -84,7 +87,10 @@ while [[ $# -gt 0 ]]; do
             elif [[ "$2" == "ags" ]] && [[ "$wbackend" == "wayland" ]]; then
                 echo "ags" > "$persist/bar"
             elif [[ "$2" == "waybar" ]] && [[ "$wbackend" == "wayland" ]]; then
+                bar_symlink
                 echo "waybar" > "$persist/bar"
+            elif [[ "$2" == "no" ]]; then
+                echo "no" > "$persist/bar"
             else
                 echo "--bar: Illegal Operation, did you set backend correctly? --sb <wayland/xorg>"
             fi
@@ -93,7 +99,11 @@ while [[ $# -gt 0 ]]; do
         --reload)
             case "$2" in
                 "$backend")
+                if [[ $backend != "manual" ]]; then
                     fetch
+                elif [[ "$backend" == "manual" ]]; then
+                    source $HOME/sysconf/custom.sh
+                fi  
                     ;;
                 "$wall_util")
                     wallutil
@@ -107,7 +117,6 @@ while [[ $# -gt 0 ]]; do
                     bar_init
                     ;;
         *)
-            echo "--reload: Illegal Option"
             usage
             ;;
     esac

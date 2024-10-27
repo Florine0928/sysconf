@@ -3,7 +3,7 @@
 ## Simple Rice Management utility for Linux
 ## Features
 
-- Frontend to Swaybg, Feh, Matugen and Pywal.
+- Frontend to Swaybg, Feh and Pywal.
 - Supports X.org and Wayland
 - Multiple bars supported such as Eww, AGS, Waybar and Polybar
 - Dynamic Switching between Dark and Light mode
@@ -14,11 +14,11 @@
 
 ## Dependencies
 ```bash
-- Wayland 
-swaybg pywal matugen - waybar or eww or ags
+  - Wayland 
+  swaybg pywal - waybar or eww or ags
 
-- X.org
-feh pywal matugen - polybar or eww
+  - X.org
+  feh pywal matugen - polybar or eww
 ```
 ## Installation
 
@@ -32,16 +32,16 @@ feh pywal matugen - polybar or eww
 ## Usage/Examples
 
 ```sh
-sysconf --wallpaper ~/Download/wallpaper.png
-sysconf --sb wayland
-sysconf --backend pywal
-sysconf --bar waybar
-sysconf --reload all
+  sysconf --wallpaper ~/Download/wallpaper.png
+  sysconf --sb wayland
+  sysconf --backend pywal
+  sysconf --bar waybar
+  sysconf --reload all
 ```
 And WM users can also integrate the startup script in their config file.
 ```conf
-Example for Hyprland:
-exec = sysconf --reload
+  Example for Hyprland:
+  exec = sysconf --reload all
 ```
 ## Feedback
 
