@@ -72,8 +72,8 @@ if [[ $wall_util != "no" ]]; then
 if pgrep -x "$wall_util" > /dev/null
 then
     pkill -x "$wall_util"
-fi # ref line 49
-fi # ref line 47
+fi 
+fi 
 
 # sudo mka bacon
 if [[ $wall_util == "swaybg" ]]; then
@@ -90,10 +90,11 @@ fi
 bar_symlink() {
     if [[ $backend == "pywal" ]]; then
         if [[ $bar == "waybar" ]]; then
-            if [ ! -e "$HOME/.config/waybar/colors-custom.css" ] && [ -e "$HOME/.cache/wal/colors-waybar.css" ]; then
+            if [ ! -e "$HOME/.config/waybar/colors-custom.css" ]; then
                 ln -s "$HOME/.cache/wal/colors-waybar.css" "$HOME/.config/waybar/colors-custom.css"
             elif [ ! -e "$HOME/.cache/wal/colors-waybar.css" ]; then
                 fetch
+                ln -s "$HOME/.cache/wal/colors-waybar.css" "$HOME/.config/waybar/colors-custom.css"
             fi
         fi
     fi
@@ -105,8 +106,8 @@ bar_symlink() {
             fi
         fi
     fi
-} # this links pywal's colors to waybar dir, where you can import the colors-waybar.css into style.css and make use of pywal
-  # you can look as a example at my dotfiles how i did that.
+} # this links pywal's colors to waybar dir, where you can import the colors-custom.css into style.css and make use of pywal
+  # you can look as a example at my dotfiles how I did that.
 
 bar_init() {
     if [[ $bar != "no" ]]; then
@@ -115,18 +116,18 @@ bar_init() {
     then
         pkill -x "$bar"
 
-    fi # ref line 70
-    fi # ref line 68
+    fi 
+    fi 
 
-    if [[ $bar == "waybar" ]]; then 
+    if [[ $bar == "waybar" ]] && [[ $wbackend == "wayland" ]]; then 
         bar_symlink
         nohup $bar > /dev/null 2>&1 & 
-    elif [[ $bar == "polybar" ]]; then
+    elif [[ $bar == "polybar" ]] && [[ $wbackend == "xorg" ]]; then
         nohup $bar mybar > /dev/null 2>&1 &
     elif [[ $bar == "eww" ]]; then
-        nohup eww open mybar > /dev/null 2>&1 &
-    elif [[ $bar == "ags" ]]; then
-        nohup ags > /dev/null 2>&1 &
+        nohup $bar open mybar > /dev/null 2>&1 &
+    elif [[ $bar == "ags" ]] && [[ $wbackend == "wayland" ]]; then
+        nohup $bar > /dev/null 2>&1 &
     fi
 }
 
@@ -135,7 +136,7 @@ bar_init() {
 ################################################
 
 reload_all() {
+    wallutil    
     fetch
     bar_init
-    wallutil
 }
