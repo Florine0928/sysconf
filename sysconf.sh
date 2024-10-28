@@ -7,18 +7,26 @@ source $HOME/sysconf/backend.sh
 
 populate # persist
 
+help_array=() # Contains reloadable things such as bar IF they are not disabled
+
+# Check each variable and add it to the array if it meets the condition
+for var in "$wall_util" "$bar"; do
+    if [[ "$var" != "no" ]]; then
+        help_array+=("$var")
+    fi
+done
+
 usage() {
     echo "Usage: $0 [OPTIONS]"
     echo
     echo "Options:"
-    echo "  -h, --help                    Shows this help message"
+    echo "  --help, -h                    Shows this help message"
     echo "  --wallpaper <path to file>    Set wallpaper target"
-    echo "  --wall-util <swaybg/feh>      Specify the wallpaper utility (swaybg, feh. "no" to disable)"
+    echo "  --util <swaybg/feh|auto>      Specify the wallpaper utility (swaybg, feh or auto. "no" to disable)"
     echo "  --bar <option>                Set the bar to execute at start (waybar, polybar, ags, eww. "no" to disable)"
     echo "  --scheme <type>               Set the color scheme (light or dark)"
     echo "  --backend <type>              Choose backend (pywal, manual)"
-    echo "  --sb <type>                   Specify the session backend (wayland or xorg)"
-    echo "  --reload <option>             Reload Rice (Options: all, $backend, $wall_util, $bar)"
+    echo "  --reload <option>             Reload Rice (Options: all $backend ${help_array[@]})"
     echo
     echo "Example:"
     echo "  $0 --wallpaper my_wallpaper.jpg --scheme dark"
@@ -36,26 +44,38 @@ while [[ $# -gt 0 ]]; do
             reload_all
             shift 2
             ;;
-        --wall-util)
-            if [[ "$2" == "feh" ]] && [[ "$wbackend" == "xorg" ]]; then
+        --util)
+            if [[ "$2" == "feh" ]] && [[ "$XDG_SESSION_TYPE" != "wayland" ]]; then
                 echo "$2" > "$persist/wall_util"
                 unset wall_util
                 wall_util="$2"
                 wallutil
-            elif [[ "$2" == "feh" ]] && [[ "$wbackend" == "wayland" ]]; then
-                echo "--wall-util: cannot use feh as wallpaper setter on wayland session."
-            elif [[ "$2" == "swaybg" ]] && [[ "$wbackend" == "wayland" ]]; then
+            elif [[ "$2" == "feh" ]] && [[ "$XDG_SESSION_TYPE" == "wayland" ]]; then
+                echo "$1: cannot use $2 as wallpaper setter on $XDG_SESSION_TYPE."
+            elif [[ "$2" == "swaybg" ]] && [[ "$XDG_SESSION_TYPE" != "x11" ]]; then
                 echo "$2" > "$persist/wall_util"
                 unset wall_util
                 wall_util="$2"
                 wallutil
-            elif [[ "$2" == "swaybg" ]] && [[ "$wbackend" == "xorg" ]]; then
-                echo "--wall-util: cannot use swaybg as wallpaper setter on xorg session."
+            elif [[ "$2" == "swaybg" ]] && [[ "$XDG_SESSION_TYPE" == "x11" ]]; then
+                echo "$1: cannot use $2 as wallpaper setter on $XDG_SESSION_TYPE."
+            elif [[ "$2" == "auto" ]]; then
+                if [[ $XDG_SESSION_TYPE == "wayland" ]]; then
+                    echo "swaybg" > "$persist/wall_util"
+                    unset wall_util
+                    wall_util="swaybg"
+                    wallutil
+                elif [[ $XDG_SESSION_TYPE == "x11" ]]; then
+                    echo "feh" > "$persist/wall_util"
+                    unset wall_util
+                    wall_util="feh"
+                    wallutil
+                fi
             elif [[ "$2" == "no" ]]; then
                 pkill $wall_util
                 echo "$2" > "$persist/wall_util"
             else
-                echo "--wall-util: Illegal Operation, did you set backend? --sb <wayland/xorg>"
+                echo "$1 Illegal Operation"
             fi
             shift 2
             ;;
@@ -71,7 +91,7 @@ while [[ $# -gt 0 ]]; do
                 scheme="$2"
                 reload_all
             else
-                echo "--scheme: Illegal Operation"
+                echo "$1: Illegal Operation"
             fi
             shift 2
             ;;
@@ -80,49 +100,36 @@ while [[ $# -gt 0 ]]; do
                 echo "$2" > "$persist/backend"
                 unset backend
                 backend="$2"
+                bar_symlink
                 reload_all
             elif [[ "$2" == "manual" ]]; then
                 echo "$2" > "$persist/backend"
                 unset backend
                 backend="$2"
-                rm $HOME/.config/waybar/colors-custom.css
+                bar_symlink
                 reload_all
             else
-                echo "--backend: Illegal Operation"
-            fi
-            shift 2
-            ;;
-        --sb)
-            if [[ "$2" == "wayland" ]]; then
-                echo "$2" > "$persist/wbackend"
-                unset wbackend
-                wbackend="$2"
-            elif [[ "$2" == "xorg" ]]; then
-                echo "$2" > "$persist/wbackend"
-                unset wbackend
-                wbackend="$2"
-            else 
-                echo "--sb: Illegal Operation"
+                echo "$1: Illegal Operation"
             fi
             shift 2
             ;;
         --bar)
             if [[ "$2" == "eww" ]]; then
-                echo "$2s" > "$persist/bar"
-                unset bar
-                bar="$2"
-                bar_init
-            elif [[ "$2" == "polybar" ]] && [[ "$wbackend" == "xorg" ]]; then
                 echo "$2" > "$persist/bar"
                 unset bar
                 bar="$2"
                 bar_init
-            elif [[ "$2" == "ags" ]] && [[ "$wbackend" == "wayland" ]]; then
+            elif [[ "$2" == "polybar" ]] && [[ "$XDG_SESSION_TYPE" == "x11" ]]; then
                 echo "$2" > "$persist/bar"
                 unset bar
                 bar="$2"
                 bar_init
-            elif [[ "$2" == "waybar" ]] && [[ "$wbackend" == "wayland" ]]; then
+            elif [[ "$2" == "ags" ]] && [[ "$XDG_SESSION_TYPE" == "wayland" ]]; then
+                echo "$2" > "$persist/bar"
+                unset bar
+                bar="$2"
+                bar_init
+            elif [[ "$2" == "waybar" ]] && [[ "$XDG_SESSION_TYPE" == "wayland" ]]; then
                 echo "$2" > "$persist/bar"
                 unset bar
                 bar="$2"
@@ -130,9 +137,8 @@ while [[ $# -gt 0 ]]; do
             elif [[ "$2" == "no" ]]; then
                 pgrep -x "$bar" > /dev/null && pkill -x "$bar"
                 echo "$2" > "$persist/bar"
-
             else
-                echo "--bar: Illegal Operation, did you set backend correctly? --sb <wayland/xorg>"
+                echo "$1: Illegal Operation"
             fi
             shift 2
             ;;
@@ -146,16 +152,24 @@ while [[ $# -gt 0 ]]; do
                 fi  
                     ;;
                 "$wall_util")
+                if [[ "$wall_util" != "no" ]]; then
                     wallutil
+                else
+                    echo "ERROR: Cannot reload disabled component"
+                fi
                     ;;
                 "$bar")
+                if [[ $bar != "no" ]]; then
                     bar_init
+                else 
+                    echo "ERROR: Cannot reload disabled component"
+                fi
                     ;;
                 "all")
                     reload_all
                     ;;
                 *)
-                    usage
+                    echo "$1: Illegal Operation"
                     ;;
     esac
     shift 2  # Shift twice to skip the option and its argument

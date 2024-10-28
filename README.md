@@ -10,7 +10,9 @@
 - Everything done in terminal
 - Written in bash at 3AM
 
+## Why
 
+I made to make my life easier.
 
 ## Dependencies
 ```bash
@@ -18,7 +20,7 @@
   swaybg pywal - waybar or eww or ags
 
   - X.org
-  feh pywal matugen - polybar or eww
+  feh pywal - polybar or eww
 ```
 ## Installation
 
@@ -33,10 +35,8 @@
 
 ```sh
   sysconf --wallpaper ~/Download/wallpaper.png
-  sysconf --sb wayland
   sysconf --backend pywal
   sysconf --bar waybar
-  sysconf --reload all
 ```
 And WM users can also integrate the startup script in their config file.
 ```conf
