@@ -10,6 +10,8 @@
 - Everything done in terminal
 - Written in bash at 3AM
 
+   ![example](example.png)
+
 ## Why
 
 I made to make my life easier.
