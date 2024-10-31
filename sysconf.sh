@@ -27,6 +27,7 @@ usage() {
     echo "  --scheme <type>               Set the color scheme (light or dark)"
     echo "  --backend <type>              Choose backend (pywal, manual)"
     echo "  --reload <option>             Reload Rice (Options: all $backend ${help_array[@]})"
+    echo "    echo <var>                  Echoes a environment variable related to sysconf"
     echo
     echo "Example:"
     echo "  $0 --wallpaper my_wallpaper.jpg --scheme dark"
@@ -42,6 +43,25 @@ while [[ $# -gt 0 ]]; do
             unset wall
             wall="$2"
             reload_all
+            shift 2
+            ;;
+        echo)
+            if [[ "$2" == "persist" ]]; then
+                echo "PERSIST: $persist"
+            elif [[ "$2" == "wallpaper" ]]; then
+                echo "WALLPAPER: $wall"
+            elif [[ "$2" == "util" ]]; then
+                echo "UTIL: $wall_util"
+            elif [[ "$2" == "scheme" ]]; then
+                echo "SCHEME: $scheme"
+            elif [[ "$2" == "backend" ]]; then
+                echo "BACKEND: $backend"
+            elif [[ "$2" == "bar" ]]; then
+                echo "BAR: $bar"
+            else
+                echo "ENV: $persist | $wall | $wall_util | $scheme | $backend | $bar"
+                exit 0
+            fi
             shift 2
             ;;
         --util)
