@@ -64,6 +64,10 @@ while [[ $# -gt 0 ]]; do
             fi
             shift 2
             ;;
+        eval)
+            $2
+            shift 2
+            ;;
         --util)
             if [[ "$2" == "feh" ]] && [[ "$XDG_SESSION_TYPE" != "wayland" ]]; then
                 echo "$2" > "$persist/wall_util"
